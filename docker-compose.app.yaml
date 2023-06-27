@@ -1,0 +1,9 @@
+version: "3"
+services:
+  openetelemetry-metrics-example:
+    build:
+      context: .
+    ports:
+      - "3333:3333"
+
+# TODO: add mysql for more complex example

@@ -1,0 +1,35 @@
+# 1. Define how/where the data is received
+receivers:
+  otlp:
+    protocols:
+      http:
+      grpc:
+
+# 2. Define if/how the data will be processed
+processors:
+  batch:
+
+# 3. Define "backends" where the OpenTelemetry data will be exported
+exporters:
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    namespace: "default"
+
+  logging:
+
+# 4. (Optional) Extensions for OpenTelemetry collector
+extensions:
+  health_check:
+  pprof:
+    endpoint: :1888
+  zpages:
+    endpoint: :55679
+
+# 5. Tie everything together
+service:
+  extensions: [pprof, zpages, health_check]
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [logging, prometheus]
