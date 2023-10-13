@@ -3,17 +3,35 @@ receivers:
   otlp:
     protocols:
       http:
+        endpoint: "0.0.0.0:4318"
+        cors:
+          allowed_origins: ["*"]
+          allowed_headers: ["*"]
       grpc:
+        endpoint: "0.0.0.0:4317"
 
 # 2. Define if/how the data will be processed
 processors:
-  batch:
+  routing:
+    default_exporters:
+      - influxdb
+    table:
+      - statement: route() where resource.attributes["service.name"] == "opentelemetry-metrics-example"
+        exporters:
+          - influxdb/opentelemetry-metrics-example
 
 # 3. Define "backends" where the OpenTelemetry data will be exported
 exporters:
-  prometheus:
-    endpoint: "0.0.0.0:8889"
-    namespace: "default"
+  influxdb:
+    endpoint: "http://influxdb:8086"
+    org: MyOrg
+    token: test-token
+    bucket: default
+  influxdb/opentelemetry-metrics-example:
+    endpoint: "http://influxdb:8086"
+    org: MyOrg
+    token: test-token
+    bucket: opentelemetry-metrics-example
 
   logging:
 
@@ -27,9 +45,12 @@ extensions:
 
 # 5. Tie everything together
 service:
+  telemetry:
+    logs:
+      level: "debug"
   extensions: [pprof, zpages, health_check]
   pipelines:
     metrics:
       receivers: [otlp]
-      processors: [batch]
-      exporters: [logging, prometheus]
+      processors: [routing]
+      exporters: [logging, influxdb, influxdb/opentelemetry-metrics-example]
