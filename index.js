@@ -13,7 +13,6 @@ const homePageCounter = meter.createCounter("home-page-clicks")
 const userGreetCounter = meter.createCounter("greet-user-clicks")
 
 app.get('/', (req, res) => {
-
   // Minimalistic example with no metadata
   // homePageCounter.add(1)
 
